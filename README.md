@@ -10,6 +10,7 @@ A base for a .Net Core 7.0 Web API, which includes JWT based User Authentication
   -  Helper.cs     : Helper functions
     
 2)co.app.db
+  -  Db Create Scripts
   -  Stored Procedures
   -  Tables
   -  User defined tables
