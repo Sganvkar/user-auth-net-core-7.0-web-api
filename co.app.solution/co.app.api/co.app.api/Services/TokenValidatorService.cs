@@ -14,9 +14,8 @@ namespace mss.api.Services
 {
     public class TokenValidatorService
     {
-        private readonly co.app.api.Models.MainContext _context;
+        private readonly MainContext _context;
         private IConfigurationSection _validatorConfig;
-        private readonly TokenService _tokenService;
         private readonly JWTHandler _jwtHandler;
 
         private string? IncomingTokenValue { get; set; }
@@ -25,11 +24,10 @@ namespace mss.api.Services
 
         private string? TargetTokenValue { get; set; }
 
-        public TokenValidatorService(IConfiguration configuration, co.app.api.Models.MainContext context, TokenService tokenService, JWTHandler JWTHandler)
+        public TokenValidatorService(IConfiguration configuration, co.app.api.Models.MainContext context, JWTHandler JWTHandler)
         {
             _validatorConfig = configuration.GetSection("AccessTokenValidator");
             _context = context;
-            _tokenService = tokenService;
             _jwtHandler = JWTHandler;
         }
 

@@ -3,8 +3,8 @@ namespace co.app.common.WebApi
 {
     public class LoginRequestModel
     {
-        public string Username { get; set; }
-        public string ClientIP { get; set; }
-        public string Password { get; set; } 
+        public required string Username { get; set; }
+        public required string ClientIP { get; set; }
+        public required string Password { get; set; } 
     }
 }

@@ -8,23 +8,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace mss.api.Controllers
 {
-    [ServiceFilter(typeof(TokenAuthorizationFilter))]
+    //[ServiceFilter(typeof(TokenAuthorizationFilter))]
     [Route("api/[controller]")]
     public class RoleController : Controller
     {
-        private readonly co.app.api.Models.MainContext _context;
-        public RoleController(co.app.api.Models.MainContext context)
+        private readonly MainContext _context;
+        public RoleController(MainContext context)
         {
             _context = context;
         }
 
-        [HttpPost("UpsertRole")]
+        [HttpPost("upsert-role")]
         public ResponseModel UpsertRole([FromBody] RoleRequestModel role)
         {
             try
             {
                 var result = _context.GetResponseWithNoDataReturn.FromSqlRaw(Constants.app_SP_UpsertRole,
-                    role.RoleId, role.RoleName, role.RoleDescription, role.IsActive, role.UserGUID, role.IsDeleted
+                    role.RoleId, role.RoleName, role.RoleDescription,role.UserGUID, role.CopiedRoleId
                 ).ToList()[0];
 
                 return new ResponseModel
@@ -51,7 +51,7 @@ namespace mss.api.Controllers
 
 
         [HttpGet]
-        [Route("GetRole")]
+        [Route("get-roles")]
         public ResponseModelWith<Role> GetRole([FromQuery] Guid AccessById)
         {
             try
@@ -77,8 +77,8 @@ namespace mss.api.Controllers
         }
 
 
-        [HttpPost()]
-        [Route("DeleteRole")]
+        [HttpDelete]
+        [Route("delete-role")]
         public ResponseModel DeleteRole([FromBody] RoleRequestModel requestModel)
         {
 
@@ -97,13 +97,13 @@ namespace mss.api.Controllers
                     return responseModel;
                 }
 
-                var result = _context.RoleModels.FromSqlRaw(Constants.app_SP_DeleteRole, requestModel.RoleId, requestModel.UserGUID);
+                var result = _context.GetResponseWithNoDataReturn.FromSqlRaw(Constants.app_SP_DeleteRole, requestModel.RoleId, requestModel.UserGUID).ToList()[0];
 
                 return new ResponseModel
                 {
                     IsError = false,
-                    ErrorMessage = "",
-                    ValidateResponse = "Your Operation Is Done.",
+                    ErrorMessage = result.ErrorMessage,
+                    ValidateResponse = result.ValidateResponse,
                 };
             }
             catch (Exception ex)

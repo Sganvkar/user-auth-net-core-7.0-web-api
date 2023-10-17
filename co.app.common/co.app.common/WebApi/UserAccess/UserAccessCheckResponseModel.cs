@@ -5,7 +5,7 @@ using System.Text;
 
 namespace co.app.common.WebApi.UserAccess
 {
-    public class UserAccessCheckResponseModel: ResponseModel
+    public class UserAccessCheckResponseModel: ResponseInheritanceModel
     {
         public int? AccessCount { get; set; }
         public int? TotalAccessCount { get; set; }

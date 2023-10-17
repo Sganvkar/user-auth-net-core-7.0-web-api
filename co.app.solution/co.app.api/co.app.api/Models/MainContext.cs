@@ -35,7 +35,7 @@ namespace co.app.api.Models
         public virtual DbSet<ResponseModelWithGuid> GetResponseWithGuid { get; set; }
         public virtual DbSet<UserCheckModel> UserCheckResponseModel { get; set; }
         public virtual DbSet<UserDetailsModel> UserDetailsModel { get; set; }
-        public virtual DbSet<TokenModel> MssTokenModel { get; set; }
+        public virtual DbSet<TokenModel> TokenModel { get; set; }
         public virtual DbSet<UserModel> Users { get; set; }
         public virtual DbSet<Role> UpsertRole { get; set; }
         public virtual DbSet<AccessMatrixListModel> AccessMatrixListModels { get; set; }
@@ -44,7 +44,6 @@ namespace co.app.api.Models
         public virtual DbSet<UserAttribute> UserAttributes { get; set; }
         public virtual DbSet<UserAccountNameModel> UserAccountNameModel { get; set; }
         public virtual DbSet<UserAccessCheckResponseModel> UserAccessCheckResponseModel { get; set; }
-
 
     }
 }

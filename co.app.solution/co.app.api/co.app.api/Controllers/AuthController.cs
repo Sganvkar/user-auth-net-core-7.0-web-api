@@ -1,25 +1,28 @@
-﻿using co.app.api.Models;
+﻿using co.app.api.JWTFeatures;
+using co.app.api.Models;
 using co.app.common;
 using co.app.common.WebApi;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using mss.api.Services;
+using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace mss.api.Controllers
 {
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly co.app.api.Models.MainContext _context;
-        private readonly TokenService tokenService;
-        public AuthController(co.app.api.Models.MainContext context, TokenService tokenService)
+        private readonly MainContext _context;
+        private readonly JWTHandler _jwtHandler;
+        public AuthController(MainContext context, JWTHandler jwtHandler)
         {
             _context = context;
-            this.tokenService = tokenService;
+            _jwtHandler = jwtHandler;
         }
 
+
         [HttpPost]
-        [Route("validateUser")]
+        [Route("validate-user")]
         public AuthResponseModel ValidateUser([FromBody] LoginRequestModel requestBody)
         {
             try
@@ -27,7 +30,9 @@ namespace mss.api.Controllers
                 var username = Helper.DecryptValue(requestBody.Username);
                 var password = Helper.DecryptValue(requestBody.Password);
 
-                var checkUserResult = _context.UserCheckResponseModel.FromSqlRaw(Constants.app_SP_CheckUser, username, requestBody.ClientIP).ToList()[0];
+                var clientIp = Helper.GetClientIP;
+
+                var checkUserResult = _context.UserCheckResponseModel.FromSqlRaw(Constants.app_SP_CheckUser, username, clientIp).ToList()[0];
 
                 if (checkUserResult.IsValidUser)
                 {
@@ -35,62 +40,52 @@ namespace mss.api.Controllers
                     var passwordFromDb = Helper.DecryptValue(checkUserResult.Password);
                     if (passwordFromDb == password)
                     {
-                        var userDetails = _context.UserDetailsModel.FromSqlRaw(Constants.app_SP_GetUserDetails, username, requestBody.ClientIP).ToList()[0];
-                        if (userDetails.MugShot != null)
-                        {
-                            //userDetails.MugShot = Convert.ToBase64String(userDetails.MugShot);
-                        }
+                        var userDetails = _context.UserDetailsModel.FromSqlRaw(Constants.app_SP_GetUserDetails, username, clientIp).ToList()[0];
 
-                        TokenModel mssToken = GetMssToken(userDetails);
+                        TokenModel jwtToken = GetToken(userDetails);
 
-                        TokenModel token = _context.MssTokenModel.FromSqlRaw(
-                           Constants.app_SP_CreateTokenInDB, userDetails.UserName, mssToken.CurrentToken, mssToken.CurrentToken,
-                           mssToken.TokenValidFrom.Value, mssToken.TokenValidTo.Value, mssToken.ClientID).ToList()[0];
+                        TokenModel tokenResult = _context.TokenModel.FromSqlRaw(
+                           Constants.app_SP_CreateTokenInDB, userDetails.UserName, jwtToken.CurrentToken, jwtToken.CurrentToken,
+                           jwtToken.TokenValidFrom.Value, jwtToken.TokenValidTo.Value, jwtToken.ClientID).ToList()[0];
 
-                        userDetails.TokenID = token.ID;
-                        userDetails.Token = token.CurrentToken;
-                        userDetails.RefreshToken = token.RotativeToken;
+                        userDetails.TokenID = tokenResult.ID;
+                        userDetails.Token = jwtToken.CurrentToken;
+                        userDetails.RefreshToken = jwtToken.RotativeToken;
                         userDetails.IsError = false;
                         userDetails.ErrorMessage = "";
                         userDetails.ValidateResponse = "";
+
 
                         return new AuthResponseModel { IsAuthSuccessful = true, User = userDetails, ErrorMessage = "" };
                     }
                     else
                     {
 
-                        var user = _context.Users.FirstOrDefault(u => u.UserId == checkUserResult.UserId);
+                        var userResult = _context.GetResponseWithNoDataReturn
+                            .FromSqlRaw(
+                            Constants.app_SP_UpdateUserLoginStatus, checkUserResult.UserId, Constants.maxUnsuccessfullLoginAttempts).ToList()[0];
 
-                        if (user != null)
-                        {
-                            if (user.UnsuccessfulCount >= Constants.maxUnsuccessfullLoginAttempts)
-                            {
-                                user.IsUserLocked = true;
-                            }
-                            else
-                            {
-                                user.UnsuccessfulCount++;
-                            }
-
-                            _context.SaveChanges();
-                        }
 
                         return new AuthResponseModel
                         {
                             IsAuthSuccessful = false,
                             User = { },
-                            ErrorMessage = "Login Failed, " + (Constants.maxUnsuccessfullLoginAttempts - user.UnsuccessfulCount) + " Attempts remaining"
+                            ErrorMessage = userResult.ValidateResponse
                         };
 
                     }
 
                 }
-                else if (!checkUserResult.IsValidUser || !checkUserResult.IsActive || checkUserResult.IsUserLocked)
+                else
+                if (!checkUserResult.IsValidUser || !checkUserResult.IsActive || checkUserResult.IsUserLocked)
                 {
                     return new AuthResponseModel { IsAuthSuccessful = false, User = { }, ErrorMessage = checkUserResult.ErrorMessage };
                 }
+                else
+                {
+                    return new AuthResponseModel { IsAuthSuccessful = false, User = { }, ErrorMessage = "No Error" };
+                }
 
-                return new AuthResponseModel { IsAuthSuccessful = false, User = { }, ErrorMessage = "" };
 
 
             }
@@ -99,18 +94,18 @@ namespace mss.api.Controllers
                 return new AuthResponseModel { IsAuthSuccessful = false, User = { }, ErrorMessage = ex.Message };
             }
 
-            TokenModel GetMssToken(UserDetailsModel user)
+            TokenModel GetToken(UserDetailsModel user)
             {
 
-                TokenModel mssToken = tokenService.GenerateToken(user, _context, HttpContext);
-                return mssToken;
+                TokenModel Token = _jwtHandler.GetTokenObject(HttpContext, _context, user);
+                return Token;
             }
 
 
         }
 
         [HttpPost]
-        [Route("LogOff")]
+        [Route("log-off")]
         public ResponseModel LogOff([FromBody] LogOffRequestModel userReqModel)
         {
 
@@ -118,7 +113,7 @@ namespace mss.api.Controllers
             {
                 var userName = Helper.DecryptValue(userReqModel.UserName);
 
-                var result = _context.GetResponseWithNoDataReturn.FromSqlRaw(Constants.app_SP_LogOff, userReqModel.UserGUID, userName, userReqModel.ClientIP).ToList()[0];
+                var result = _context.GetResponseWithNoDataReturn.FromSqlRaw(Constants.app_SP_LogOff, userReqModel.UserGUID, userName, Helper.GetClientIP).ToList()[0];
 
                 return new ResponseModel { IsError = false, ErrorMessage = result.ErrorMessage, ValidateResponse = result.ValidateResponse };
 

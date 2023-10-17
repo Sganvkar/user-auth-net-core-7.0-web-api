@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace mss.api.Controllers
 {
-    [ServiceFilter(typeof(TokenAuthorizationFilter))]
+    //[ServiceFilter(typeof(TokenAuthorizationFilter))]
     [Route("api/[controller]")]
     public class UserAttributeController : ControllerBase
     {
@@ -21,7 +21,7 @@ namespace mss.api.Controllers
         }
 
         [HttpPost]
-        [Route("UpsertUserAttribute")]
+        [Route("upsert-user-attribute")]
         public ResponseModel UpsertUserAttribute([FromBody] UserAttributeRequestModel requestModel)
         {
 
@@ -68,7 +68,7 @@ namespace mss.api.Controllers
 
 
         [HttpGet]
-        [Route("GetUserAttrributes")]
+        [Route("get-user-attributes")]
         public ResponseModelWith<UserAttribute> GetUserAttrributes()
         {
             try
@@ -92,8 +92,8 @@ namespace mss.api.Controllers
 
         }
 
-        [HttpPost]
-        [Route("DeleteUserAttribute")]
+        [HttpDelete]
+        [Route("delete-user-attributes")]
         public ResponseModel DeleteUserAttribute([FromBody] UserAttributeRequestModel requestModel)
         {
 

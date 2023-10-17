@@ -19,10 +19,10 @@ namespace co.app.common.WebApi
         public bool? IsActive { get; set; }
         public DateTime? InactiveDate { get; set; }
         public string? InactiveReason { get; set; }
-        public string ValidateResponse { get; set; }
+        public string? ValidateResponse { get; set; }
         public bool IsError { get; set; }
         public int ErrorId { get; set; }
-        public string ErrorMessage { get; set; }
+        public string? ErrorMessage { get; set; }
         public string? RoleIds { get; set; }
         public string? RoleNames { get; set; }
         public string? GroupIds { get; set; }
@@ -32,7 +32,7 @@ namespace co.app.common.WebApi
         public string? Location { get; set; }
         public Byte[]? MugShot { get; set; }
         public bool? ISSA { get; set; }
-        public int? TokenID { get; set; }
+        public Guid? TokenID { get; set; }
         public string? Token { get; set; }
 
     }

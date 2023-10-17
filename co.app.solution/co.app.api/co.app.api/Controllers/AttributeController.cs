@@ -1,4 +1,5 @@
 ﻿using co.app.api.Filters;
+using co.app.api.Models;
 using co.app.common;
 using co.app.common.WebApi;
 using co.app.common.WebApi.Attribute.Get;
@@ -9,19 +10,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace mss.api.Controllers
 {
-    [ServiceFilter(typeof(TokenAuthorizationFilter))]
+   // [ServiceFilter(typeof(TokenAuthorizationFilter))]
     [Route("api/[controller]")]
     public class AttributeController
     {
-        private readonly co.app.api.Models.MainContext _context;
+        private readonly MainContext _context;
 
-        public AttributeController(co.app.api.Models.MainContext context)
+        public AttributeController(MainContext context)
         {
             _context = context;
         }
 
         [HttpPost]
-        [Route("UpsertAttribute")]
+        [Route("upsert-attribute")]
         public ResponseModel UpsertAttributeType([FromBody] AttributeRequestModel requestModel)
         {
 
@@ -42,12 +43,12 @@ namespace mss.api.Controllers
                 var result = _context.GetResponseWithNoDataReturn.FromSqlRaw(
                     Constants.app_SP_UpsertAttribute,
                    requestModel.AttributeId, requestModel.AttributeName, requestModel.AttributePath,
-                   requestModel.IsComponent, requestModel.CreatedById).ToList()[0];
+                   requestModel.IsComponent, requestModel.UserGUID).ToList()[0];
 
                 return new ResponseModel
                 {
-                    IsError = false,
-                    ErrorId = 0,
+                    IsError = result.IsError,
+                    ErrorId = result.ErrorId,
                     ErrorMessage = result.ErrorMessage,
                     ValidateResponse = result.ValidateResponse
                 };
@@ -65,8 +66,8 @@ namespace mss.api.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("GetAttributes")]
+        [HttpGet]
+        [Route("get-attributes")]
         public ResponseModelWith<AttributeListModel> GetAttributes()
         {
 
@@ -95,7 +96,7 @@ namespace mss.api.Controllers
 
 
         [HttpDelete]
-        [Route("DeleteAttribute")]
+        [Route("delete-attribute")]
         public ResponseModel DeleteAttribute([FromBody] DeleteRequestModel requestModel)
         {
 
@@ -115,7 +116,7 @@ namespace mss.api.Controllers
                     return responseModel;
                 }
 
-                var result = _context.GetResponseWithGuid.FromSqlRaw(
+                var result = _context.GetResponseWithNoDataReturn.FromSqlRaw(
                     Constants.app_SP_DeleteAttribute, requestModel.Id, requestModel.DeletedById).ToList()[0];
 
                 return new ResponseModel

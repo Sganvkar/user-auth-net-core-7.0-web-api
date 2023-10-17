@@ -27,7 +27,7 @@ namespace co.app.api.Filters
 
             int TokenID = int.Parse(actionExecutingContext.HttpContext.Request.Headers[CustomHttpHeaders.TokenID]);
 
-            var arrayOfTokens = _context.MssTokenModel.FromSqlRaw(
+            var arrayOfTokens = _context.TokenModel.FromSqlRaw(
                 Constants.app_SP_GetTokenByTokenID, TokenID).ToList();
 
             if (arrayOfTokens.Count == 0 || arrayOfTokens.Count > 1)

@@ -12,7 +12,6 @@ using co.app.api.Filters;
 
 namespace app.api.Controllers
 {
-    [ServiceFilter(typeof(TokenAuthorizationFilter))]
     [Route("api/[controller]")]
     public class AccessMatrixController : ControllerBase
     {

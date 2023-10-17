@@ -5,8 +5,8 @@ namespace co.app.common.WebApi
     public class UserCheckModel
     {   [Key]
         public Guid UserId { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
+        public required string Username { get; set; }
+        public string? Password { get; set; }
         public bool IsActive { get; set; }
         public bool IsValidUser { get; set; }
         public int ErrorId { get; set; }

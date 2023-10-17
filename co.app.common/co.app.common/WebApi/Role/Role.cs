@@ -16,9 +16,6 @@ namespace co.app.common.WebApi.Role
         public DateTime CreatedDate { get; set; }
         public Guid? ModifiedById { get; set; }
         public DateTime? ModifiedDate { get; set; }
-        public Guid? DeletedById { get; set; }
-        public DateTime? DeletedDate { get; set; }
-        public bool IsDeleted { get; set; }
     }
 
     public class RoleRequestModel : RequestModel
@@ -26,8 +23,7 @@ namespace co.app.common.WebApi.Role
         public Guid? RoleId { get; set; }
         public string? RoleName { get; set; }
         public string? RoleDescription { get; set; }
-        public bool? IsActive { get; set; }
-        public bool? IsDeleted { get; set; }
+        public Guid? CopiedRoleId { get; set; }
     }
 
 }

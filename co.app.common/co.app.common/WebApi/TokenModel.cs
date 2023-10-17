@@ -5,7 +5,7 @@ namespace co.app.common.WebApi
     public class TokenModel
     {
         [Key]
-        public int? ID { get; set; }
+        public Guid? ID { get; set; }
         public string? GrantedTo { get; set; }
         public string? CurrentToken { get; set; }
         public string? RotativeToken { get; set; }

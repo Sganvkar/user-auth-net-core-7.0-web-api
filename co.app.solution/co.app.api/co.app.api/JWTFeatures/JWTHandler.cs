@@ -69,7 +69,7 @@ namespace co.app.api.JWTFeatures
             var jwtSecurityToken = this.GenerateJwtSecurityToken(claims, isRefresh);
             return jwtSecurityToken;
         }
-        public TokenModel GetMssTokenObject(HttpContext httpContext, Models.MainContext _context, UserDetailsModel user)
+        public TokenModel GetTokenObject(HttpContext httpContext, MainContext _context, UserDetailsModel user)
         {
             var jwtSecurityToken = GetJwtSecurityToken(httpContext, user);
             var jwtSecurityTokenRefresh = GetJwtSecurityToken(httpContext, user, true);
