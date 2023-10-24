@@ -2,6 +2,7 @@
 using co.app.api.Models;
 using co.app.common;
 using co.app.common.WebApi;
+using co.app.common.WebApi.Role;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -123,6 +124,79 @@ namespace mss.api.Controllers
                 return new ResponseModel { IsError = true, ErrorId = 1, ErrorMessage = (ex.InnerException != null ? ex.InnerException.ToString() : ex.Message), ValidateResponse = (ex.InnerException != null ? ex.InnerException.ToString() : ex.Message) };
             }
 
+        }
+
+        [HttpPost]
+        [Route("refresh")]
+        public AuthResponseModel Refresh([FromBody] RefreshTokenRequestModel requesModel)
+        {
+            if (requesModel == null || requesModel.Token == null)
+            {
+                return new AuthResponseModel { IsAuthSuccessful = false, User = null, ErrorMessage = "Invalid request" };
+            }
+            string aTkn = requesModel.Token;
+            var principal = _jwtHandler.GetPrincipalFromExpiredToken(aTkn);
+            var exp = principal.Claims.First(x => x.Type == "exp").Value;
+            DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(exp));
+            var tokenExpiryTime = dateTimeOffset.LocalDateTime;
+
+            string rTkn = requesModel.RefreshToken;
+            var rfrshPrincipal = _jwtHandler.GetPrincipalFromExpiredToken(rTkn);
+            var rfrshExp = rfrshPrincipal.Claims.First(x => x.Type == "exp").Value;
+            //var tokenExpiryTime = Convert.ToDouble(rfrshExp).UnixTimeStampToDateTime();
+            DateTimeOffset refDateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(rfrshExp));
+            var refTokenExpiryTime = refDateTimeOffset.LocalDateTime;
+            if (refTokenExpiryTime < DateTime.Now)
+            {
+                return new AuthResponseModel { IsAuthSuccessful = false, User = null, ErrorMessage = "Refresh Token Expired. Relogin" };
+            }
+
+            var username = rfrshPrincipal.Identity.Name; //this is mapped to the Name claim by default
+            var user = new UserDetailsModel
+            {
+                IsError = true,
+                ErrorMessage = "",
+                ValidateResponse = "",
+                UserName = username
+            };
+            List<Role> roles = this.GetRolesByUserName(username);
+
+            if (roles != null && roles.Count > 0)
+            {
+                user.RoleNames = string.Join(",", roles.Select(x => x.RoleName)); ;//store rolenames as csv value here
+                TokenModel token = _jwtHandler.GetTokenObject(HttpContext, _context, user);
+                if (token == null)
+                {
+                    var msg = "Get Access Token Failed. Relogin.";
+                    user.ErrorMessage = msg;
+                    user.ValidateResponse = msg;
+                    return new AuthResponseModel { IsAuthSuccessful = false, User = user, ErrorMessage = msg };
+                }
+                user.IsError = false;
+                user.Token = token.CurrentToken;
+                user.RefreshToken = token.RotativeToken;
+                return new AuthResponseModel { IsAuthSuccessful = true, User = user, ErrorMessage = "" };
+            }
+            else
+            {
+                var msg = "Get Access Token Failed. Relogin.";
+                user.ErrorMessage = msg;
+                user.ValidateResponse = msg;
+                return new AuthResponseModel { IsAuthSuccessful = false, User = user, ErrorMessage = msg };
+            }
+        }
+        private List<Role> GetRolesByUserName(string userName)
+        {
+            //try
+            //{
+            List<Role> roles = _context.RoleModels.FromSqlRaw(Constants.app_SP_GetAllRoles, userName).ToList();
+
+            return roles;
+            //}
+            //catch (Exception ex)
+            //{
+            //    return roles;
+            //}
         }
     }
 }

@@ -24,6 +24,7 @@ namespace co.app.common
         public static readonly string app_SP_UpsertRole = "spUpsertRole {0}, {1}, {2}, {3}, {4}";
         public static readonly string app_SP_GetAllRoles = "spGetAllRoles {0}";
         public static readonly string app_SP_DeleteRole = "spDeleteRole {0}, {1}";
+        public static readonly string app_SP_GetRoleByUserName = "spGetRolesFortheUser {0}";
 
         public static readonly string app_SP_UpsertUserAttribute = "spUpsertUserAttribute {0}, {1}, {2}, {3}, {4}, {5}";
         public static readonly string app_SP_DeleteUserAttribute = "spDeleteUserAttribute {0}, {1}";

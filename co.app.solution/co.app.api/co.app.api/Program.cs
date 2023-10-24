@@ -18,10 +18,10 @@ builder.Services.AddDbContext<co.app.api.Models.MainContext>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder => builder
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowAnyOrigin()
-        .SetIsOriginAllowed(origin => true) // allow any origin;
+        .AllowAnyMethod()   // .WithMethods("GET", "POST")
+        .AllowAnyHeader()   // .WithHeaders("Content-Type", "Authorization")
+        .AllowAnyOrigin() // .WithOrigins("https://example.com", "https://anotherdomain.com")
+      //  .SetIsOriginAllowed(origin => true) // allow any origin;
     );
 });
 
@@ -36,9 +36,9 @@ builder.Services.AddAuthentication(opt =>
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateLifetime = true,
-        ValidateIssuer = false,
+        ValidateIssuer = true,
         ValidateAudience = false,
-        ValidateIssuerSigningKey = false,
+        ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings.GetSection("validIssuer").Value,
         ValidAudience = jwtSettings.GetSection("validAudience").Value,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.GetSection("securityKey").Value)),

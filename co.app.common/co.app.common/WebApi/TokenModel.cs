@@ -14,4 +14,10 @@ namespace co.app.common.WebApi
         public string? ClientID { get; set; }
         public DateTime? CreatedDate { get; set; }
     }
+
+    public class RefreshTokenRequestModel : RequestModel
+    {
+        public string Token { get; set; }
+        public string RefreshToken { get; set; }
+    }
 }

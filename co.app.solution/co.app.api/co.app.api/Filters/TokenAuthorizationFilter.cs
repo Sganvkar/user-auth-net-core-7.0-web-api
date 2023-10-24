@@ -41,7 +41,7 @@ namespace co.app.api.Filters
 
             TokenModel targetToken = arrayOfTokens[0];
 
-            if (targetToken.TokenValidTo < DateTime.Now ||
+            if (targetToken.TokenValidTo > DateTime.Now ||
                 !TokenValidator.DoValidation(arrayOfTokens[0], actionExecutingContext)
                 )
             {

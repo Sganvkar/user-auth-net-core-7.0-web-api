@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace mss.api.Controllers
 {
-    //[ServiceFilter(typeof(TokenAuthorizationFilter))]
+    [ServiceFilter(typeof(TokenAuthorizationFilter))]
     [Route("api/[controller]")]
     public class RoleController : Controller
     {
